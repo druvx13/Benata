@@ -1,70 +1,44 @@
 <?php
-// post.php - Updated with Comments
+// category.php
 require 'includes/db.php';
 require 'includes/functions.php';
 
 $slug = $_GET['slug'] ?? '';
-$message = '';
 
 if (!$slug) {
     header('Location: index.php');
     exit;
 }
 
-$post = get_post_by_slug($pdo, $slug);
+// Get category info
+$cat_stmt = $pdo->prepare("SELECT * FROM categories WHERE slug = ?");
+$cat_stmt->execute([$slug]);
+$category = $cat_stmt->fetch();
 
-if (!$post) {
-    http_response_code(404);
-    echo "Post not found.";
-    exit;
+if (!$category) {
+     http_response_code(404);
+     die("Category not found.");
 }
 
-if ($post) {
-    // Simple view count increment (be aware of bots/refeshes)
-    // A more robust solution would use sessions or cookies to prevent repeated counts
-    $update_views_sql = "UPDATE posts SET view_count = view_count + 1 WHERE id = :id";
-    $update_views_stmt = $pdo->prepare($update_views_sql);
-    $update_views_stmt->execute(['id' => $post['id']]);
-    // Fetch updated post data if needed later
-    // $post['view_count']++; // Update local variable if displayed on this page
-}
-
-// Handle comment submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment_submit'])) {
-    $author_name = $_POST['author_name'] ?? '';
-    $author_email = $_POST['author_email'] ?? '';
-    $content = $_POST['content'] ?? '';
-
-    $result = add_comment($pdo, $post['id'], $author_name, $author_email, $content);
-    if ($result === 'success') {
-        $message = '<div class="alert alert-success terminal-text mt-4">Comment submitted and awaiting moderation. Thank you!</div>';
-    } else {
-        $message = '<div class="alert alert-error terminal-text mt-4">Error: ' . escape($result) . '</div>';
-    }
-}
-
-$comments = get_approved_comments($pdo, $post['id']);
+$posts = get_posts_by_category_slug($pdo, $slug);
 $recent_posts = get_recent_posts($pdo);
-$categories = get_categories_with_count($pdo);
+$categories = get_categories_with_count($pdo); // For sidebar
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= escape($post['title']) ?> | Benata Matrix</title>
-    <meta name="description" content="<?= escape($post['excerpt'] ?? substr(strip_tags($post['content']), 0, 155) . '...') ?>">
+    <title>Category: <?= escape($category['name']) ?> | Benata Matrix</title>
+    <meta name="description" content="Posts in the '<?= escape($category['name']) ?>' category on Benata Matrix Blog.">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=VT323&family=Orbitron:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <!-- Prism.js for Syntax Highlighting -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
 </head>
 <body id="main-body" class="bg-black text-green-400 font-mono matrix-bg min-h-screen theme-dark">
     <button id="theme-toggle" class="theme-toggle-btn">Toggle Theme</button>
     <div class="container mx-auto px-4 py-8 max-w-6xl">
-        <!-- Header -->
         <header class="text-center mb-12">
             <h1 class="text-4xl md:text-6xl font-bold mb-4 glow-text">BENATA MATRIX</h1>
             <div class="terminal-text text-lg mb-2">> Dhruv Solanki's Digital Journal</div>
@@ -72,9 +46,9 @@ $categories = get_categories_with_count($pdo);
             <a href="index.php" class="retro-link text-xl">&laquo; Back to Blog</a>
         </header>
         <div class="flex flex-col md:flex-row gap-8">
-            <!-- Sidebar (same as index) -->
             <aside class="md:w-1/3 sidebar p-6 rounded-lg">
-                <div class="mb-8">
+                <!-- Sidebar content same as index.php -->
+                 <div class="mb-8">
                     <h2 class="retro-heading text-lg mb-4">> ABOUT</h2>
                     <div class="terminal-text space-y-3">
                         <p>Welcome to my digital sanctuary where I explore the intersections of technology, philosophy, and self-discovery.</p>
@@ -131,72 +105,37 @@ $categories = get_categories_with_count($pdo);
                     </div>
                 </div>
             </aside>
-            <!-- Main Content -->
             <main class="md:w-2/3 space-y-8">
-                <!-- Post Content -->
                 <div class="content-section p-6 rounded-lg">
-                    <?php if (!empty($post['category_names'])): 
-                        $cat_names = explode(',', $post['category_names']);
-                    ?>
-                    <div class="flex flex-wrap gap-2 mb-3">
-                        <?php foreach ($cat_names as $cat_name): ?>
-                            <span class="tag px-2 py-1 text-xs"><?= escape(trim($cat_name)) ?></span>
-                        <?php endforeach; ?>
-                    </div>
-                    <?php endif; ?>
-                    <h1 class="text-3xl font-bold mb-4 retro-heading"><?= escape($post['title']) ?></h1>
-                    <p class="post-date mb-6">Published on <?= date('F j, Y', strtotime($post['created_at'])) ?> | Views: <?= $post['view_count'] ?></p>
-                    <div class="post-content terminal-text">
-                        <?= $post['content'] ?> <!-- Assuming content is stored as HTML -->
-                    </div>
-                </div>
-
-                <!-- Comments Section -->
-                <div class="content-section p-6 rounded-lg">
-                    <h2 class="retro-heading text-xl mb-6">> COMMENTS (<?= count($comments) ?>)</h2>
-
-                    <?php if ($message): echo $message; endif; ?>
-
-                    <!-- Comments List -->
-                    <?php if ($comments): ?>
-                        <div class="space-y-6 mb-8">
-                            <?php foreach ($comments as $comment): ?>
-                            <div class="border-b border-green-800 pb-4">
-                                <div class="flex justify-between items-center mb-2">
-                                    <strong class="terminal-text"><?= escape($comment['author_name']) ?></strong>
-                                    <span class="post-date text-xs"><?= date('F j, Y \a\t g:i A', strtotime($comment['created_at'])) ?></span>
+                    <h2 class="retro-heading text-xl mb-6">> CATEGORY: <?= escape(strtoupper($category['name'])) ?> (<?= count($posts) ?> POSTS)</h2>
+                    <?php if ($posts): ?>
+                        <div class="space-y-8">
+                            <?php foreach ($posts as $post): ?>
+                            <article class="blog-post p-6 border border-green-500 bg-black/50">
+                                <?php if (!empty($post['category_names'])):
+                                    $cat_names = explode(',', $post['category_names']);
+                                ?>
+                                <div class="flex flex-wrap gap-2 mb-3">
+                                    <?php foreach ($cat_names as $cat_name): ?>
+                                        <span class="tag px-2 py-1 text-xs"><?= escape(trim($cat_name)) ?></span>
+                                    <?php endforeach; ?>
                                 </div>
-                                <p class="terminal-text"><?= nl2br(escape($comment['content'])) ?></p>
-                            </div>
+                                <?php endif; ?>
+                                <h3 class="text-2xl font-bold mb-2"><a href="post.php?slug=<?= urlencode($post['slug']) ?>" class="retro-link"><?= escape($post['title']) ?></a></h3>
+                                <p class="terminal-text mb-4"><?= escape($post['excerpt']) ?></p>
+                                <div class="flex justify-between items-center">
+                                    <span class="post-date text-sm"><?= date('F j, Y', strtotime($post['created_at'])) ?></span>
+                                    <span class="terminal-text text-sm">~5 min read</span>
+                                </div>
+                            </article>
                             <?php endforeach; ?>
                         </div>
                     <?php else: ?>
-                        <p class="terminal-text mb-6">No comments yet. Be the first!</p>
+                        <p class="terminal-text">No posts found in this category yet.</p>
                     <?php endif; ?>
-
-                    <!-- Add Comment Form -->
-                    <h3 class="retro-heading text-lg mb-4">> LEAVE A COMMENT</h3>
-                    <form method="post" class="terminal-text space-y-4">
-                        <div>
-                            <label for="author_name">Name *</label>
-                            <input type="text" id="author_name" name="author_name" class="w-full bg-black border border-green-500 p-2 mt-1" required>
-                        </div>
-                        <div>
-                            <label for="author_email">Email (optional)</label>
-                            <input type="email" id="author_email" name="author_email" class="w-full bg-black border border-green-500 p-2 mt-1">
-                        </div>
-                        <div>
-                            <label for="content">Comment *</label>
-                            <textarea id="content" name="content" rows="5" class="w-full bg-black border border-green-500 p-2 mt-1" required></textarea>
-                        </div>
-                        <button type="submit" name="comment_submit" class="bg-green-900 text-green-300 px-4 py-2 border border-green-500 hover:bg-green-800">
-                            > POST COMMENT
-                        </button>
-                    </form>
                 </div>
             </main>
         </div>
-        <!-- Footer -->
         <footer class="mt-12 text-center terminal-text text-sm">
             <div class="border-t border-green-500 pt-6">
                 <p>© 2023 Benata Matrix | Dhruv Solanki</p>
@@ -205,9 +144,6 @@ $categories = get_categories_with_count($pdo);
             </div>
         </footer>
     </div>
-    <!-- Prism.js for Syntax Highlighting -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
     <script>
 document.addEventListener('DOMContentLoaded', function() {
     const body = document.getElementById('main-body');

@@ -37,6 +37,46 @@
 .blink {
     animation: blink-animation 1s steps(5, start) infinite;
 }
+
+/* Add to style.css */
+/* Default dark theme (as you have it) */
+.theme-dark {
+    /* Your existing .matrix-bg, text colors etc. are already dark */
+}
+
+/* Alternative dark theme */
+.theme-alternate-dark {
+    background-color: #0a0a1a; /* Deeper blue-black */
+    color: #00ffff; /* Cyan text */
+}
+.theme-alternate-dark .retro-link {
+    color: #ff6bff; /* Magenta links */
+}
+.theme-alternate-dark .retro-link:hover {
+    color: #ffff00; /* Yellow on hover */
+    text-shadow: 0 0 5px #ffff00;
+}
+.theme-alternate-dark .post-date {
+    color: #00ffff;
+}
+.theme-alternate-dark .tag {
+    background: rgba(0, 255, 255, 0.1);
+    border: 1px solid #00ffff;
+}
+/* Add more overrides as needed */
+
+/* Add a button style for toggle */
+.theme-toggle-btn {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    padding: 5px 10px;
+    background: rgba(0, 51, 0, 0.7);
+    border: 1px solid #00ff41;
+    color: #00ff41;
+    cursor: pointer;
+}
 @keyframes blink-animation {
     to {
         visibility: hidden;

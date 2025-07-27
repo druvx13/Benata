@@ -41,14 +41,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Benata Matrix | Dhruv's Blog</title>
+    <title>Benata Matrix | Dhruv's Blog - Philosophy, Code & Consciousness</title>
+    <meta name="description" content="Welcome to Benata Matrix, Dhruv Solanki's digital journal. Explore the intersections of technology, philosophy, and self-discovery.">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=VT323&family=Orbitron:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <!-- Removed inline styles and moved to style.css -->
 </head>
-<body class="bg-black text-green-400 font-mono matrix-bg min-h-screen">
+<body id="main-body" class="bg-black text-green-400 font-mono matrix-bg min-h-screen theme-dark">
+    <button id="theme-toggle" class="theme-toggle-btn">Toggle Theme</button>
     <!-- Scanline effect -->
     <div class="scanline"></div>
     <div class="container mx-auto px-4 py-8 max-w-6xl">
@@ -72,9 +74,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email'])) {
                 </div>
                 <div class="mb-8">
                     <h2 class="retro-heading text-lg mb-4">> CATEGORIES</h2>
-                    <div class="terminal-text space-y-2">
-                        <?php foreach ($categories as $category): ?>
-                            <p>> <a href="#" class="retro-link"><?= escape($category['name']) ?></a> (<?= escape($category['post_count']) ?>)</p>
+                    <div class="terminal-text flex flex-wrap gap-2">
+                        <?php
+                        // Find max count for sizing
+                        $max_count = 1;
+                        foreach ($categories as $cat) {
+                            if ($cat['post_count'] > $max_count) $max_count = $cat['post_count'];
+                        }
+                        foreach ($categories as $cat):
+                            // Calculate relative size (simple linear scaling)
+                            $font_size = 0.8 + (0.6 * ($cat['post_count'] / ($max_count > 0 ? $max_count : 1)));
+                        ?>
+                            <a href="category.php?slug=<?= urlencode($cat['slug']) ?>" class="retro-link" style="font-size: <?= $font_size ?>rem;">
+                                <?= escape($cat['name']) ?> (<?= escape($cat['post_count']) ?>)
+                            </a>
                         <?php endforeach; ?>
                     </div>
                 </div>
@@ -88,6 +101,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email'])) {
                         </div>
                         <?php endforeach; ?>
                     </div>
+                </div>
+                <!-- Add inside the sidebar <aside> in index.php, just before the CONNECT section -->
+                <div class="mb-8">
+                    <h2 class="retro-heading text-lg mb-4">> SEARCH</h2>
+                    <form method="get" action="search.php" class="terminal-text">
+                        <div class="flex">
+                            <input type="text" name="q" placeholder="Search posts..." class="flex-grow bg-black border border-green-500 p-2 mr-2 text-green-400" required>
+                            <button type="submit" class="bg-green-900 text-green-300 px-4 py-2 border border-green-500 hover:bg-green-800">
+                                > GO
+                            </button>
+                        </div>
+                    </form>
                 </div>
                 <div class="mb-8">
                     <h2 class="retro-heading text-lg mb-4">> CONNECT</h2>
@@ -192,5 +217,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email'])) {
         </footer>
     </div>
     <script src="script.js"></script>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const body = document.getElementById('main-body');
+    const toggleButton = document.getElementById('theme-toggle');
+    const themes = ['theme-dark', 'theme-alternate-dark'];
+    let currentThemeIndex = 0;
+
+    // Check for saved theme in localStorage
+    const savedThemeIndex = localStorage.getItem('benata_theme_index');
+    if (savedThemeIndex !== null) {
+        currentThemeIndex = parseInt(savedThemeIndex, 10) % themes.length;
+        body.className = body.className.replace(/theme-\S+/g, themes[currentThemeIndex]);
+    }
+
+    toggleButton.addEventListener('click', function() {
+        currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+        body.className = body.className.replace(/theme-\S+/g, themes[currentThemeIndex]);
+        localStorage.setItem('benata_theme_index', currentThemeIndex);
+    });
+});
+</script>
 </body>
 </html>
