@@ -3,7 +3,25 @@
 require 'includes/db.php';
 require 'includes/functions.php';
 
-$posts = get_all_posts($pdo, 4); // Get latest 4 posts for the main page
+// Pagination settings
+$posts_per_page = 4;
+$total_posts = count_all_posts($pdo);
+$total_pages = ceil($total_posts / $posts_per_page);
+
+// Get current page from URL, default to 1
+$current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+if ($current_page < 1) {
+    $current_page = 1;
+} elseif ($current_page > $total_pages) {
+    $current_page = $total_pages;
+}
+
+// Calculate offset
+$offset = ($current_page - 1) * $posts_per_page;
+
+// Get posts for the current page
+$posts = get_all_posts($pdo, $posts_per_page, $offset);
+
 $recent_posts = get_recent_posts($pdo);
 $categories = get_categories_with_count($pdo);
 
@@ -131,13 +149,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email'])) {
                         
                     </div>
                     <!-- Pagination -->
+                    <?php if ($total_pages > 1): ?>
                     <div class="mt-10 flex justify-center space-x-4 terminal-text">
-                        <a href="#" class="px-4 py-2 border border-green-500 hover:bg-green-900/30">Prev</a>
-                        <a href="#" class="px-4 py-2 border border-green-500 bg-green-900/30">1</a>
-                        <a href="#" class="px-4 py-2 border border-green-500 hover:bg-green-900/30">2</a>
-                        <a href="#" class="px-4 py-2 border border-green-500 hover:bg-green-900/30">3</a>
-                        <a href="#" class="px-4 py-2 border border-green-500 hover:bg-green-900/30">Next</a>
+                        <?php if ($current_page > 1): ?>
+                            <a href="?page=<?= $current_page - 1 ?>" class="px-4 py-2 border border-green-500 hover:bg-green-900/30">Prev</a>
+                        <?php endif; ?>
+
+                        <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                            <a href="?page=<?= $i ?>" class="px-4 py-2 border border-green-500 <?= ($i == $current_page) ? 'bg-green-900/30' : 'hover:bg-green-900/30' ?>"><?= $i ?></a>
+                        <?php endfor; ?>
+
+                        <?php if ($current_page < $total_pages): ?>
+                            <a href="?page=<?= $current_page + 1 ?>" class="px-4 py-2 border border-green-500 hover:bg-green-900/30">Next</a>
+                        <?php endif; ?>
                     </div>
+                    <?php endif; ?>
                 </div>
                 <!-- Newsletter Section -->
                 <div class="content-section p-6 rounded-lg">
