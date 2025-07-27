@@ -1,7 +1,7 @@
 <?php
 // Main blog page - displays list of posts
-require 'includes/db.php';
-require 'includes/functions.php';
+require '../src/includes/db.php';
+require '../src/includes/functions.php';
 
 $posts = get_all_posts($pdo, 4); // Get latest 4 posts for the main page
 $recent_posts = get_recent_posts($pdo);

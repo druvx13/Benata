@@ -1,7 +1,7 @@
 <?php
 // Single post page
-require 'includes/db.php';
-require 'includes/functions.php';
+require '../src/includes/db.php';
+require '../src/includes/functions.php';
 
 $slug = $_GET['slug'] ?? '';
 

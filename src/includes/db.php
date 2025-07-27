@@ -1,6 +1,6 @@
 <?php
 // Database connection script
-require_once 'config.php';
+require_once __DIR__ . '/../config.php';
 
 // Using PDO for better security and flexibility
 try {
