@@ -1,0 +1,137 @@
+/* Your original CSS styles */
+@keyframes scanline {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100vh); }
+}
+.scanline {
+    animation: scanline 8s linear infinite;
+    background: linear-gradient(rgba(0, 255, 0, 0.1), rgba(0, 255, 0, 0.3));
+    height: 2px;
+    position: fixed;
+    width: 100%;
+    z-index: 9999;
+}
+.matrix-bg {
+    background-color: #000;
+    background-image: 
+        radial-gradient(rgba(0, 150, 0, 0.75), black 120%),
+        repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15) 1px, transparent 1px, transparent 2px),
+        repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15) 1px, transparent 1px, transparent 2px);
+    background-size: 3px 3px;
+}
+.terminal-text {
+    font-family: 'VT323', monospace;
+    font-size: 1.2rem;
+    line-height: 1.4;
+}
+.retro-heading {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+.neon-border {
+    border: 2px solid #00ff41;
+    box-shadow: 0 0 10px #00ff41, inset 0 0 10px #00ff41;
+}
+.blink {
+    animation: blink-animation 1s steps(5, start) infinite;
+}
+@keyframes blink-animation {
+    to {
+        visibility: hidden;
+    }
+}
+.sidebar {
+    background: rgba(0, 0, 0, 0.7);
+    border-right: 2px solid #00ff41;
+}
+.content-section {
+    border: 2px solid #00ff41;
+    box-shadow: 0 0 15px rgba(0, 255, 65, 0.5);
+}
+.terminal-window {
+    background: #001a00;
+    border: 2px solid #00ff41;
+}
+.terminal-header {
+    background: #003300;
+    height: 25px;
+    border-bottom: 1px solid #00ff41;
+}
+.terminal-button {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin: 6px 2px;
+}
+.button-red { background: #ff5f56; }
+.button-yellow { background: #ffbd2e; }
+.button-green { background: #27c93f; }
+.retro-link {
+    color: #00fff9;
+    text-decoration: underline;
+    transition: all 0.3s;
+}
+.retro-link:hover {
+    color: #ff00c1;
+    text-shadow: 0 0 5px #ff00c1;
+}
+.glow-text {
+    text-shadow: 0 0 10px #00ff41;
+}
+.blog-post {
+    transition: transform 0.3s;
+}
+.blog-post:hover {
+    transform: translateY(-5px);
+}
+.post-date {
+    color: #00ff41;
+}
+.tag {
+    background: rgba(0, 255, 65, 0.1);
+    border: 1px solid #00ff41;
+}
+
+/* Additional styles for dynamic content */
+.post-content img {
+    max-width: 100%;
+    height: auto;
+}
+.pagination {
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    padding: 0;
+}
+.pagination li {
+    margin: 0 5px;
+}
+.pagination a {
+    display: block;
+    padding: 8px 12px;
+    border: 1px solid #00ff41;
+    color: #00ff41;
+    text-decoration: none;
+}
+.pagination a:hover, .pagination .active a {
+    background-color: rgba(0, 255, 65, 0.1);
+}
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+.alert-success {
+    color: #dff0d8;
+    background-color: #3c763d;
+    border-color: #d6e9c6;
+}
+.alert-error {
+    color: #a94442;
+    background-color: #f2dede;
+    border-color: #ebccd1;
+  }
