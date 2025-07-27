@@ -1,0 +1,2 @@
+# Benata
+A blog.
