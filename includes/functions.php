@@ -79,4 +79,11 @@ function escape($html) {
     return htmlspecialchars($html, ENT_QUOTES | ENT_SUBSTITUTE, "UTF-8");
 }
 
+// Function to count all posts
+function count_all_posts($pdo) {
+    $sql = "SELECT COUNT(*) FROM posts";
+    $stmt = $pdo->query($sql);
+    return (int)$stmt->fetchColumn();
+}
+
 ?>
